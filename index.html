@@ -1,198 +1,132 @@
 <!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Si – N – Ca = Fe</title>
-  <style>
-    :root{
-      --bg:#5c0011;          /* bordowe tło */
-      --card:#751a2d;        /* ciemniejszy bordowy panel */
-      --accent:#f2e6e6;      /* jasny beż/róż do tekstów */
-      --muted:#d9a6a6;
-      --ok:#4bd37b;
-      --err:#ff6b6b;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: sans-serif;
-      color:var(--accent);
-      background: radial-gradient(1000px at 30% top, #7a1f33 0%, transparent 70%), var(--bg);
-      min-height:100vh;
-      display:flex;align-items:center;justify-content:center;
-      padding:24px;
-      overflow-x:hidden;
-    }
-    .wrap{
-      width:min(980px,100%);
-      background:var(--card);
-      border:1px solid rgba(255,255,255,.1);
-      box-shadow:var(--shadow);
-      border-radius:28px;
-      padding:28px;
-      position:relative;
-      overflow:hidden;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Si – N – Ca - Fe</title>
+<style>
+  :root{
+    --bordo:#5c0011;
+    --panel:#751a2d;
+    --ink:#f2e6e6;
+    --muted:#e7b9b9;
+    --ok:#4bd37b;
+    --err:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:#5c0011; color:var(--ink);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .wrap{
+    width:min(900px,100%); background:var(--panel);
+    border:1px solid rgba(255,255,255,.15); border-radius:22px; padding:28px;
+    box-shadow:0 8px 20px rgba(0,0,0,.45);
+  }
+  h1{margin:0 0 8px}
+  .sub{margin:0 0 16px; color:var(--muted); font-size:14px}
 
-    /* watermark bunny */
-    .wrap::before{
-      content:"";
-      position:absolute;
-      right:20px; bottom:20px;
-      width:200px; height:200px;
-      opacity:.08;
-      background:url("bunny.png") no-repeat center/contain;
-      pointer-events:none;
-    }
+  .equation{
+    display:flex; gap:12px; justify-content:center; align-items:center;
+    padding:16px; border-radius:16px; background:rgba(0,0,0,.18);
+    border:1px solid rgba(255,255,255,.15); margin-bottom:16px;
+  }
+  .el,.op{
+    min-width:64px; height:64px; display:flex; align-items:center; justify-content:center;
+    border-radius:12px; background:rgba(0,0,0,.28);
+    border:1px solid rgba(255,255,255,.16); font-weight:800; font-size:22px;
+  }
 
-    h1{margin:0;font-weight:800;letter-spacing:.2px}
-    p.sub{margin:.25rem 0 1rem;color:var(--muted)}
+  .inputs{ display:flex; gap:10px; flex-wrap:wrap }
+  input{
+    padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.2);
+    background:#400015; color:var(--ink); font-size:16px; outline:none; min-width:200px;
+  }
+  button{
+    padding:10px 14px; border:0; border-radius:10px; cursor:pointer;
+    background:#a1233c; color:#fff; font-weight:700;
+  }
 
-    .equation{
-      display:flex; align-items:center; justify-content:center;
-      gap:18px; padding:22px;
-      border:1px solid rgba(255,255,255,.15);
-      border-radius:18px;
-      background:rgba(0,0,0,0.15);
-    }
-    .el, .op{
-      display:inline-flex; align-items:center; justify-content:center;
-      min-width:72px; height:80px;
-      border-radius:14px;
-      background:rgba(0,0,0,0.25);
-      border:1px solid rgba(255,255,255,.1);
-      font-weight:800; font-size:28px;
-      user-select:none;
-      color:var(--accent);
-    }
+  .status{ margin-top:10px; font-size:14px; color:var(--muted) }
+  .status.ok{ color:var(--ok) }
+  .status.err{ color:var(--err) }
 
-    .status{ margin-top:12px; font-size:14px; color:var(--muted); }
-    .status.ok{ color:var(--ok) }
-    .status.err{ color:var(--err) }
-
-    .inputs{ display:flex; gap:10px; margin-top:16px }
-    input[type="text"]{
-      padding:12px 14px;
-      background:#400015;
-      border:1px solid rgba(255,255,255,.15);
-      border-radius:12px;
-      color:var(--accent);
-      outline:none;
-      min-width:200px;
-      font-size:16px;
-    }
-    button{
-      padding:12px 16px;border:0;border-radius:12px;
-      background:#8b1d34;
-      color:var(--accent);font-weight:700;cursor:pointer;
-      box-shadow:0 6px 16px rgba(0,0,0,.25);
-    }
-
-    /* QR */
-    .qr{ display:none; margin-top:20px; text-align:center }
-    .qr.active{ display:block; animation:pop .3s ease }
-    .qr img{ width:220px; height:220px; border-radius:12px; box-shadow:var(--shadow); background:white }
-
-    /* królik po sukcesie */
-    .bunny-pop{
-      position:fixed; inset:auto 20px 20px auto; 
-      width:200px; height:200px; display:none;
-      animation:pop .35s ease forwards;
-      z-index:50; 
-    }
-    .bunny-pop.active{ display:block }
-    .bunny-pop img{ width:100%; height:100%; }
-
-    @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
-  </style>
+  .qr{ display:none; margin-top:16px; text-align:center }
+  .qr.active{ display:block }
+  .qr .box{
+    width:220px; height:220px; margin:0 auto; border-radius:12px;
+    border:2px dashed rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.18); color:var(--muted);
+  }
+</style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Si – N – Ca = Fe</h1>
-    <p class="sub">zgaduj zgadula :), jestes coraz blizej.</p>
+    <h1>Si – N – Ca - Fe</h1>
+    <p class="sub">ciepło,ciepło...</p>
 
-    <div class="equation">
-      <div class="el">Si</div>
-      <div class="op">–</div>
-      <div class="el">N</div>
-      <div class="op">–</div>
-      <div class="el">Ca</div>
-      <div class="op">=</div>
+    <div class="equation" aria-label="równanie">
+      <div class="el">Si</div><div class="op">–</div>
+      <div class="el">N</div><div class="op">–</div>
+      <div class="el">Ca</div><div class="op">-</div>
       <div class="el">Fe</div>
     </div>
 
     <div class="inputs">
-      <input id="dateInput" type="text" placeholder="dd.mm.rrrr" />
-      <button id="checkBtn">Sprawdź</button>
+      <input id="dateInput" type="text" placeholder="fecha" autocomplete="off" inputmode="numeric" />
+      <button id="checkBtn">lets see</button>
     </div>
-    <div id="dateMsg" class="status"></div>
+    <div id="msg" class="status"></div>
 
-    <div class="qr" id="qrBox">
-      <div id="qrHolder">Tu pojawi się QR</div>
-      <p id="qrCaption">Dodaj swój link w kodzie.</p>
+    <div id="qr" class="qr" aria-hidden="true">
+      <div class="box" id="qrBox">Tu pojawi się QR</div>
+      <p style="color:var(--muted)">Link dodasz później w kodzie (stała <code>QR_DATA</code>).</p>
     </div>
   </div>
 
-  <!-- duży królik -->
-  <div class="bunny-pop" id="bunnyPop">
-    <img src="bunny.png" alt="bunny"/>
-  </div>
+<script>
+  // Oczekiwana data: 14.07.2026 (Si=14, N=7, Ca=20, Fe=26)
+  const expected = { dd:14, mm:7, yyyy:2026 };
+  // Gdy będziesz mieć link do QR, wpisz go tutaj:
+  const QR_DATA  = ""; // np. "https://twoj-link.pl"
 
-  <script>
-    const QR_DATA = "";
-    const expected = { dd:14, mm:7, yyyy:2026 };
+  const input = document.getElementById('dateInput');
+  const msg   = document.getElementById('msg');
+  const qr    = document.getElementById('qr');
+  const qrBox = document.getElementById('qrBox');
 
-    const dateInput = document.getElementById('dateInput');
-    const dateMsg = document.getElementById('dateMsg');
-    const qrBox = document.getElementById('qrBox');
-    const qrHolder = document.getElementById('qrHolder');
-    const qrCaption = document.getElementById('qrCaption');
-    const bunnyPop = document.getElementById('bunnyPop');
+  document.getElementById('checkBtn').addEventListener('click', onCheck);
+  input.addEventListener('keydown', e => { if(e.key==='Enter') onCheck(); });
 
-    document.getElementById('checkBtn').addEventListener('click', verifyDate);
+  function parseDate(str){
+    const parts = str.trim().split(/[.\-\/]/).map(n => parseInt(n,10));
+    if(parts.length!==3 || parts.some(Number.isNaN)) return null;
+    return { dd:parts[0], mm:parts[1], yyyy:parts[2] };
+  }
 
-    function normalizeDate(str){
-      if(!str) return null;
-      const parts = str.trim().split(/[.\-\/]/).map(p=>parseInt(p,10));
-      if(parts.length!==3) return null;
-      return {dd:parts[0], mm:parts[1], yyyy:parts[2]};
+  function onCheck(){
+    const got = parseDate(input.value);
+    if(!got){
+      msg.textContent = 'fecha,fecha';
+      msg.className = 'status err'; qr.classList.remove('active'); return;
     }
+    if(got.dd===expected.dd && got.mm===expected.mm && got.yyyy===expected.yyyy){
+      msg.textContent = 'gorąco!!'; msg.className = 'status ok';
+      showQR();
+    }else{
+      msg.textContent = 'zimno,zimno'; msg.className = 'status err';
+      qr.classList.remove('active');
+    }
+  }
 
-    function verifyDate(){
-      const got = normalizeDate(dateInput.value);
-      if(!got){
-        dateMsg.textContent = 'Podaj w formacie dd.mm.rrrr';
-        dateMsg.className = 'status err';
-        qrBox.classList.remove('active');
-        return;
-      }
-      if(got.dd===expected.dd && got.mm===expected.mm && got.yyyy===expected.yyyy){
-        dateMsg.textContent = 'Brawo!';
-        dateMsg.className = 'status ok';
-        showQR();
-        showBunny();
-      }else{
-        dateMsg.textContent = 'zimno,zimno.';
-        dateMsg.className = 'status err';
-        qrBox.classList.remove('active');
-      }
+  function showQR(){
+    qr.classList.add('active'); qr.setAttribute('aria-hidden','false');
+    if(QR_DATA){
+      const url = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(QR_DATA);
+      qrBox.innerHTML = '<img alt="QR" width="240" height="240" src="'+url+'">';
     }
-
-    function showQR(){
-      qrBox.classList.add('active');
-      if (QR_DATA){
-        const url = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(QR_DATA);
-        qrHolder.innerHTML = `<img src="${url}" alt="Kod QR"/>`;
-        qrCaption.textContent = 'Zeskanuj kod QR.';
-      }
-    }
-    function showBunny(){
-      bunnyPop.classList.add('active');
-      setTimeout(()=>{ bunnyPop.classList.remove('active'); }, 6000);
-    }
-  </script>
+  }
+</script>
 </body>
 </html>
